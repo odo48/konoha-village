@@ -3,6 +3,7 @@
 import type { Flavor } from "@/lib/flavor";
 import { TERMS } from "@/lib/flavor";
 import type { Project } from "@/lib/types";
+import type { ConnectionStatus } from "@/lib/contract";
 import { clock } from "@/lib/ui";
 
 export type ViewId = "map" | "board" | "log";
@@ -11,7 +12,14 @@ function Crest() {
   // Stylized Hidden Leaf swirl.
   return (
     <svg width="34" height="34" viewBox="0 0 48 48" aria-hidden>
-      <circle cx="24" cy="24" r="22" fill="#15201a" stroke="#2f4438" strokeWidth="2" />
+      <circle
+        cx="24"
+        cy="24"
+        r="22"
+        fill="#15201a"
+        stroke="#2f4438"
+        strokeWidth="2"
+      />
       <path
         d="M24 9c-6 0-10 4.5-10 10 0 4 2.5 7 6 8-2.5 1-4 3-4 5.5 0 3.5 3 6.5 7 6.5"
         fill="none"
@@ -33,6 +41,7 @@ export default function Header({
   selectedProjectId,
   setSelectedProjectId,
   stats,
+  status,
   mounted,
   now,
 }: {
@@ -44,6 +53,7 @@ export default function Header({
   selectedProjectId: string;
   setSelectedProjectId: (id: string) => void;
   stats: { deployed: number; openMissions: number; avgChakra: number };
+  status: ConnectionStatus;
   mounted: boolean;
   now: number;
 }) {
@@ -95,14 +105,25 @@ export default function Header({
 
         {/* Stats */}
         <div className="hidden items-center gap-2 sm:flex">
-          <Stat label={flavor === "konoha" ? "Deployed" : "Active"} value={stats.deployed} tone="#38bdf8" />
-          <Stat label={flavor === "konoha" ? "Open missions" : "Open stories"} value={stats.openMissions} tone="#eab308" />
+          <Stat
+            label={flavor === "konoha" ? "Deployed" : "Active"}
+            value={stats.deployed}
+            tone="#38bdf8"
+          />
+          <Stat
+            label={flavor === "konoha" ? "Open missions" : "Open stories"}
+            value={stats.openMissions}
+            tone="#eab308"
+          />
           <Stat
             label={TERMS.chakra[flavor]}
             value={`${stats.avgChakra}%`}
             tone="#4cc46c"
           />
         </div>
+
+        {/* Connection status */}
+        <ConnChip status={status} mounted={mounted} />
 
         {/* Live clock */}
         <div className="flex items-center gap-2 rounded-md border border-bark-600 bg-bark-800 px-2.5 py-1.5">
@@ -136,7 +157,9 @@ export default function Header({
           <button
             onClick={() => setFlavor("konoha")}
             className={`rounded-md px-2.5 py-1.5 transition ${
-              flavor === "konoha" ? "bg-flame/90 text-white" : "text-leaf-100/60 hover:text-white"
+              flavor === "konoha"
+                ? "bg-flame/90 text-white"
+                : "text-leaf-100/60 hover:text-white"
             }`}
           >
             Konoha
@@ -144,7 +167,9 @@ export default function Header({
           <button
             onClick={() => setFlavor("plain")}
             className={`rounded-md px-2.5 py-1.5 transition ${
-              flavor === "plain" ? "bg-chakra text-bark-900" : "text-leaf-100/60 hover:text-white"
+              flavor === "plain"
+                ? "bg-chakra text-bark-900"
+                : "text-leaf-100/60 hover:text-white"
             }`}
           >
             Plain
@@ -166,9 +191,60 @@ function Stat({
 }) {
   return (
     <div className="flex items-center gap-2 rounded-md border border-bark-600 bg-bark-800 px-2.5 py-1.5">
-      <span className="h-2 w-2 rounded-full" style={{ backgroundColor: tone }} />
+      <span
+        className="h-2 w-2 rounded-full"
+        style={{ backgroundColor: tone }}
+      />
       <span className="text-sm font-semibold tabular-nums">{value}</span>
       <span className="text-[11px] text-leaf-100/50">{label}</span>
+    </div>
+  );
+}
+
+const CONN: Record<ConnectionStatus, { label: string; color: string }> = {
+  mock: { label: "SIMULATED", color: "#a855f7" },
+  connecting: { label: "CONNECTING", color: "#eab308" },
+  live: { label: "LIVE", color: "#22c55e" },
+  reconnecting: { label: "RECONNECTING", color: "#f97316" },
+  closed: { label: "OFFLINE", color: "#ef4444" },
+};
+
+function ConnChip({
+  status,
+  mounted,
+}: {
+  status: ConnectionStatus;
+  mounted: boolean;
+}) {
+  const c = CONN[status];
+  const pulse = status === "live" || status === "connecting";
+  return (
+    <div
+      className="flex items-center gap-1.5 rounded-md border px-2.5 py-1.5"
+      style={{
+        borderColor: `color-mix(in srgb, ${c.color} 45%, transparent)`,
+        backgroundColor: `color-mix(in srgb, ${c.color} 12%, transparent)`,
+      }}
+      title="Data source: simulated in-process, or a live orchestrator over WebSocket"
+    >
+      <span className="relative flex h-2 w-2">
+        {pulse && (
+          <span
+            className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"
+            style={{ backgroundColor: c.color }}
+          />
+        )}
+        <span
+          className="relative inline-flex h-2 w-2 rounded-full"
+          style={{ backgroundColor: c.color }}
+        />
+      </span>
+      <span
+        className="text-[10px] font-semibold tracking-wide"
+        style={{ color: c.color }}
+      >
+        {mounted ? c.label : "…"}
+      </span>
     </div>
   );
 }

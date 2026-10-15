@@ -1,0 +1,26 @@
+# Runs the board and the mock orchestrator together:
+#   docker compose up --build
+#   board  → http://localhost:3000   (connected live to the orchestrator)
+#   orch   → http://localhost:8787   (REST + WebSocket)
+services:
+  orchestrator:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    environment:
+      ORCH_PORT: "8787"
+      ORCH_REPLAY_CAP: "500"
+    ports:
+      - "8787:8787"
+
+  board:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # The browser connects from the host, so localhost:8787 is correct.
+        NEXT_PUBLIC_ORCH_WS: ws://localhost:8787
+    ports:
+      - "3000:3000"
+    depends_on:
+      - orchestrator

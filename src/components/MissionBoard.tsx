@@ -88,7 +88,9 @@ export default function MissionBoard({
                       </span>
                     </div>
 
-                    <h4 className="text-sm font-medium leading-snug">{w.title}</h4>
+                    <h4 className="text-sm font-medium leading-snug">
+                      {w.title}
+                    </h4>
 
                     {w.parentId && arcs.has(w.parentId) && (
                       <div className="mt-1 truncate text-[11px] text-leaf-300/50">
@@ -130,7 +132,9 @@ export default function MissionBoard({
                       <div className="flex items-center gap-2 text-[10px] text-leaf-100/40">
                         {w.prNumber && <span>PR #{w.prNumber}</span>}
                         {w.dependsOn.length > 0 && (
-                          <span title="dependencies">🧵 {w.dependsOn.length}</span>
+                          <span title="dependencies">
+                            🧵 {w.dependsOn.length}
+                          </span>
                         )}
                       </div>
                     </div>

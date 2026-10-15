@@ -101,13 +101,13 @@ export default function VillageMap({
   const activeProject =
     selectedProjectId === "all"
       ? null
-      : projects.find((p) => p.id === selectedProjectId) ?? null;
+      : (projects.find((p) => p.id === selectedProjectId) ?? null);
 
   const touches = (t: Thread) =>
     !selectedAgentId || t.a === selectedAgentId || t.b === selectedAgentId;
 
   return (
-    <div className="relative h-full w-full overflow-hidden rounded-xl border border-bark-600 bg-bark-900 paper">
+    <div className="paper relative h-full w-full overflow-hidden rounded-xl border border-bark-600 bg-bark-900">
       {/* Caption */}
       <div className="pointer-events-none absolute left-4 top-4 z-10">
         <div className="text-sm font-semibold text-leaf-100/90">
@@ -131,11 +131,7 @@ export default function VillageMap({
         {threads.map((t) => {
           const dim = !touches(t);
           const base =
-            t.kind === "command"
-              ? "#2f4438"
-              : t.active
-                ? "#38bdf8"
-                : "#3a5446";
+            t.kind === "command" ? "#2f4438" : t.active ? "#38bdf8" : "#3a5446";
           return (
             <path
               key={t.key}
@@ -144,10 +140,14 @@ export default function VillageMap({
               stroke={base}
               strokeWidth={t.active ? 1.4 : 1}
               strokeLinecap="round"
-              strokeDasharray={t.kind === "command" ? "1 3" : t.active ? "4 3" : undefined}
+              strokeDasharray={
+                t.kind === "command" ? "1 3" : t.active ? "4 3" : undefined
+              }
               vectorEffect="non-scaling-stroke"
               className={t.active && !dim ? "animate-threadFlow" : undefined}
-              style={{ opacity: dim ? 0.12 : t.kind === "command" ? 0.45 : 0.9 }}
+              style={{
+                opacity: dim ? 0.12 : t.kind === "command" ? 0.45 : 0.9,
+              }}
             />
           );
         })}
@@ -191,7 +191,10 @@ export default function VillageMap({
             </span>
             <span className="mt-1 whitespace-nowrap rounded bg-bark-850/80 px-1.5 py-0.5 text-[11px] font-medium text-leaf-100/90">
               {a.name}
-              <span className="ml-1 text-[9px]" style={{ color: rankColor(a.rank) }}>
+              <span
+                className="ml-1 text-[9px]"
+                style={{ color: rankColor(a.rank) }}
+              >
                 {RANKS[a.rank].kanji}
               </span>
             </span>
@@ -202,13 +205,19 @@ export default function VillageMap({
       {/* Legend */}
       <div className="absolute bottom-3 left-4 z-10 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg border border-bark-600 bg-bark-850/80 px-3 py-2 text-[11px] text-leaf-100/60">
         <span className="flex items-center gap-1.5">
-          <span className="inline-block h-0.5 w-5 bg-chakra" /> {TERMS.deps[flavor]} (active)
+          <span className="inline-block h-0.5 w-5 bg-chakra" />{" "}
+          {TERMS.deps[flavor]} (active)
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="inline-block h-2 w-2 animate-chakraPulse rounded-full bg-chakra" /> deployed
+          <span className="inline-block h-2 w-2 animate-chakraPulse rounded-full bg-chakra" />{" "}
+          deployed
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="inline-block h-2 w-2 rounded-full" style={{ background: "#64748b" }} /> idle
+          <span
+            className="inline-block h-2 w-2 rounded-full"
+            style={{ background: "#64748b" }}
+          />{" "}
+          idle
         </span>
       </div>
     </div>

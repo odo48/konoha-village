@@ -3,13 +3,7 @@
 // clauboard's live agent view, re-skinned as the Hidden Leaf Village.
 
 export type RankId =
-  | "academy"
-  | "genin"
-  | "chunin"
-  | "jonin"
-  | "anbu"
-  | "kage"
-  | "hokage";
+  "academy" | "genin" | "chunin" | "jonin" | "anbu" | "kage" | "hokage";
 
 export type RoleId =
   | "product-owner"
@@ -84,11 +78,7 @@ export interface WorkItem {
 }
 
 export type ProjectPhase =
-  | "discovery"
-  | "inception"
-  | "planning"
-  | "delivery"
-  | "complete";
+  "discovery" | "inception" | "planning" | "delivery" | "complete";
 
 export interface Project {
   id: string;

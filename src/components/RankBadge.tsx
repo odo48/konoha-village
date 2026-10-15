@@ -15,7 +15,8 @@ export default function RankBadge({
 }) {
   const meta = RANKS[rank];
   const c = rankColor(rank);
-  const pad = size === "md" ? "px-2.5 py-1 text-xs" : "px-1.5 py-0.5 text-[10px]";
+  const pad =
+    size === "md" ? "px-2.5 py-1 text-xs" : "px-1.5 py-0.5 text-[10px]";
   return (
     <span
       className={`inline-flex items-center gap-1 rounded-full font-semibold uppercase tracking-wide ${pad}`}

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import type { Agent, WorkItem } from "@/lib/types";
 import type { Flavor } from "@/lib/flavor";
 import { STATUS_LABEL } from "@/lib/flavor";
@@ -12,18 +13,50 @@ export default function AgentDetail({
   flavor,
   workItems,
   onClose,
+  onInstruct,
 }: {
   agent: Agent;
   flavor: Flavor;
   workItems: WorkItem[];
   onClose: () => void;
+  onInstruct?: (agentId: string, text: string) => void;
 }) {
   const role = ROLES[agent.role];
   const rank = RANKS[agent.rank];
   const assigned = workItems.filter((w) => w.assignee === agent.id);
+  const [order, setOrder] = useState("");
+  const panelRef = useRef<HTMLElement>(null);
+
+  // Focus the panel on open, close on Escape, restore focus on unmount.
+  useEffect(() => {
+    const prev = document.activeElement as HTMLElement | null;
+    panelRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      prev?.focus?.();
+    };
+  }, [onClose]);
+
+  function send() {
+    const text = order.trim();
+    if (!text || !onInstruct) return;
+    onInstruct(agent.id, text);
+    setOrder("");
+  }
 
   return (
-    <aside className="fixed inset-y-0 right-0 z-40 flex w-full max-w-sm flex-col border-l border-bark-600 bg-bark-850 shadow-2xl">
+    <aside
+      ref={panelRef}
+      tabIndex={-1}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`${agent.name} details`}
+      className="fixed inset-y-0 right-0 z-40 flex w-full max-w-sm flex-col border-l border-bark-600 bg-bark-850 shadow-2xl outline-none"
+    >
       <div className="flex items-start justify-between gap-3 border-b border-bark-600 p-4">
         <div className="flex items-center gap-3">
           <span
@@ -36,7 +69,9 @@ export default function AgentDetail({
             {role.emoji}
           </span>
           <div>
-            <div className="text-lg font-semibold leading-tight">{agent.name}</div>
+            <div className="text-lg font-semibold leading-tight">
+              {agent.name}
+            </div>
             <div className="text-xs text-leaf-100/50">
               inspired by {role.character}
             </div>
@@ -63,7 +98,8 @@ export default function AgentDetail({
         </Field>
         <Field label={`${rank.label} · ${rank.kanji}`}>
           <span className="text-leaf-100/70">
-            {rank.blurb} Stands in for the <strong>{rank.softwareLevel}</strong> level.
+            {rank.blurb} Stands in for the <strong>{rank.softwareLevel}</strong>{" "}
+            level.
           </span>
         </Field>
 
@@ -73,7 +109,9 @@ export default function AgentDetail({
               className="h-2.5 w-2.5 rounded-full"
               style={{ backgroundColor: AGENT_STATUS_COLOR[agent.status] }}
             />
-            <span className="text-sm font-medium capitalize">{agent.status}</span>
+            <span className="text-sm font-medium capitalize">
+              {agent.status}
+            </span>
           </div>
           <p className="text-sm text-leaf-100/70">{agent.activity}</p>
         </div>
@@ -97,7 +135,8 @@ export default function AgentDetail({
 
         <div>
           <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-leaf-300/70">
-            {flavor === "konoha" ? "Assigned missions" : "Assigned items"} ({assigned.length})
+            {flavor === "konoha" ? "Assigned missions" : "Assigned items"} (
+            {assigned.length})
           </h3>
           <div className="space-y-1.5">
             {assigned.length === 0 && (
@@ -112,8 +151,12 @@ export default function AgentDetail({
                   className="h-2 w-2 shrink-0 rounded-full"
                   style={{ backgroundColor: STATUS_COLOR[w.status] }}
                 />
-                <span className="font-mono text-[11px] text-leaf-100/50">{w.id}</span>
-                <span className="min-w-0 flex-1 truncate text-sm">{w.title}</span>
+                <span className="font-mono text-[11px] text-leaf-100/50">
+                  {w.id}
+                </span>
+                <span className="min-w-0 flex-1 truncate text-sm">
+                  {w.title}
+                </span>
                 <span className="shrink-0 text-[10px] text-leaf-100/50">
                   {STATUS_LABEL[w.status][flavor]}
                 </span>
@@ -122,6 +165,38 @@ export default function AgentDetail({
           </div>
         </div>
       </div>
+      {/* Write path: send orders to this shinobi (clauboard-style). */}
+      {onInstruct && (
+        <div className="border-t border-bark-600 p-3">
+          <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-leaf-300/70">
+            {flavor === "konoha"
+              ? `Send orders to ${agent.name}`
+              : `Instruct ${agent.name}`}
+          </label>
+          <div className="flex items-center gap-2">
+            <input
+              value={order}
+              onChange={(e) => setOrder(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") send();
+              }}
+              placeholder={
+                flavor === "konoha"
+                  ? "e.g. prioritize the payment flow"
+                  : "e.g. prioritize the payment flow"
+              }
+              className="min-w-0 flex-1 rounded-md border border-bark-600 bg-bark-800 px-2.5 py-1.5 text-sm outline-none focus:border-leaf-500"
+            />
+            <button
+              onClick={send}
+              disabled={!order.trim()}
+              className="rounded-md bg-leaf-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-leaf-500 disabled:opacity-40"
+            >
+              Send
+            </button>
+          </div>
+        </div>
+      )}
     </aside>
   );
 }

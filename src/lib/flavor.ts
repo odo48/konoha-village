@@ -92,9 +92,6 @@ export const TERMS = {
   deps: { konoha: "Chakra threads", plain: "Dependencies" },
 } as const;
 
-export function term(
-  key: keyof typeof TERMS,
-  flavor: Flavor,
-): string {
+export function term(key: keyof typeof TERMS, flavor: Flavor): string {
   return TERMS[key][flavor];
 }

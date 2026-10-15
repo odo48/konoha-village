@@ -6,3 +6,11 @@
 next-env.d.ts
 .DS_Store
 npm-debug.log*
+
+# local env (keep .env.local.example tracked)
+.env
+.env.local
+.env*.local
+
+# test / tooling output
+/coverage
